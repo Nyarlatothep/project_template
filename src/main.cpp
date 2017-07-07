@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
     auto cwd = fs::current_path();
 
     auto invalid_project_name = [&](std::string name) {
-      return !fs::portable_file_name(name) || fs::exists(cwd / name);
+      return !fs::portable_directory_name(name) || fs::exists(cwd / name);
     };
 
     project_names |=
