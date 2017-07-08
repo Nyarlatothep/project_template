@@ -1,23 +1,18 @@
-#include <boost/filesystem.hpp>
-#include <boost/process.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
-
-#include "gsl/gsl"
-#include "range/v3/all.hpp"
-
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 
-#include <iostream>
+#include "range/v3/action.hpp"
+
 #include <string>
 
+#include "cmake_execution.hpp"
 #include "default_project.hpp"
 
-namespace bp = boost::process;
 namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 using namespace ranges;
-
-void run_cmake(fs::path build_directory);
 
 int main(int argc, char* argv[]) {
   po::options_description desc{"Allowed options"};
@@ -40,7 +35,7 @@ int main(int argc, char* argv[]) {
     auto project_names = vm["project-name"].as<std::vector<std::string>>();
     auto cwd = fs::current_path();
 
-    auto invalid_project_name = [&](std::string name) {
+    auto invalid_project_name = [&cwd](const std::string name) {
       return !fs::portable_directory_name(name) || fs::exists(cwd / name);
     };
 
@@ -58,18 +53,4 @@ int main(int argc, char* argv[]) {
   }
 
   return 0;
-}
-
-void run_cmake(fs::path build_directory) {
-  const auto initial_path = fs::current_path();
-  fs::current_path(build_directory);
-  auto __reset_working_directory =
-      gsl::finally([initial_path] { fs::current_path(initial_path); });
-
-  fs::path cmake = bp::search_path("cmake");
-  const auto parent_directory = "-G ninja ..";
-
-  // Create child process with build_directory as working directory
-  bp::child c(cmake, parent_directory);
-  c.wait();
 }

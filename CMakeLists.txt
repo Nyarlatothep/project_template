@@ -30,5 +30,4 @@ include_directories(include)
 add_subdirectory(src)
 
 add_executable(main src/main.cpp)
-target_link_libraries(main project_library)
-target_link_libraries(main ${Boost_LIBRARIES})
+target_link_libraries(main ${Boost_LIBRARIES} project_library)
