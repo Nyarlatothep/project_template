@@ -8,13 +8,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Output compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-# Add warnings
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything")
-endif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-
 # Change project name here
 set(PROJECT_NAME project_template)
 # Where to build the files

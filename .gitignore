@@ -42,3 +42,5 @@ build/
 
 # directory configuration
 .dir-locals.el
+
+CMakeLists\.txt\.user
