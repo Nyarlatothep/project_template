@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
   // Command Line Parsing
   cl::opt<bool> RunCMake("cmake", cl::desc("Run CMake from build directory"));
   cl::list<std::string> InputProjectNames(
-      cl::Positional, cl::desc("<Project Names>"), cl::Required);
+      cl::Positional, cl::desc("<Project Names>"), cl::OneOrMore);
   cl::ParseCommandLineOptions(argc, argv);
   std::vector<std::string> project_names = InputProjectNames;
 
