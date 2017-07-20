@@ -14,29 +14,31 @@ int main(int argc, char* argv[]) {
   using namespace llvm;
   using namespace ranges;
 
-  auto cwd = fs::current_path();
+  const auto cwd = fs::current_path();
 
   // Command Line Parsing
   cl::opt<bool> RunCMake("cmake", cl::desc("Run CMake from build directory"));
-  cl::list<std::string> InputProjectNames(
-      cl::Positional, cl::desc("<Project Names>"), cl::OneOrMore);
+  cl::list<std::string> InputProjectNames(cl::Positional, cl::desc("<Project Names>"),
+                                          cl::OneOrMore);
   cl::ParseCommandLineOptions(argc, argv);
+  // Convert to vector to be able to use range methods
   std::vector<std::string> project_names = InputProjectNames;
 
   auto invalid_project_name = [&cwd](const std::string name) {
     return !fs::portable_directory_name(name) || fs::exists(cwd / name);
   };
 
-  project_names |=
-      action::remove_if(invalid_project_name) | action::sort | action::unique;
+  project_names |= action::remove_if(invalid_project_name) | action::sort | action::unique;
 
+  // Write to disk
   for (const auto& name : project_names) {
-    auto project_path = cwd / name;
-
     Folder project = default_project(name);
     project.write_to(cwd);
+  }
 
-    if (RunCMake) {
+  if (RunCMake) {
+    for (const auto& name : project_names) {
+      auto project_path = cwd / name;
       run_cmake(project_path / "build");
     }
   }
