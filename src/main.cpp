@@ -9,10 +9,39 @@
 #include "cmake_execution.hpp"
 #include "default_project.hpp"
 
-int main(int argc, char* argv[]) {
-  namespace fs = boost::filesystem;
+namespace fs = boost::filesystem;
+using namespace ranges;
+
+bool invalid_project_name(const std::string name, const fs::path working_directory) {
+  return !fs::portable_directory_name(name) || fs::exists(working_directory / name);
+}
+
+template <class Container>
+void remove_invalid_and_duplicate(Container &project_names, const fs::path &working_directory) {
+  project_names |= action::remove_if([&working_directory](auto &name) {
+                     return invalid_project_name(name, working_directory);
+                   }) |
+                   action::sort | action::unique;
+}
+
+template <class Container>
+void write_to_disk(Container &project_names, const fs::path working_directory) {
+  for (const auto &name : project_names) {
+    Folder project = default_project(name);
+    project.write_to(working_directory);
+  }
+}
+
+template <class Container>
+void run_cmake_in_build_folders(Container &project_names, const fs::path working_directory) {
+  for (const std::string &name : project_names) {
+    auto project_path = working_directory / name;
+    run_cmake(project_path / "build");
+  }
+}
+
+int main(int argc, char *argv[]) {
   using namespace llvm;
-  using namespace ranges;
 
   const auto cwd = fs::current_path();
 
@@ -24,23 +53,10 @@ int main(int argc, char* argv[]) {
   // Convert to vector to be able to use range methods
   std::vector<std::string> project_names = InputProjectNames;
 
-  auto invalid_project_name = [&cwd](const std::string name) {
-    return !fs::portable_directory_name(name) || fs::exists(cwd / name);
-  };
-
-  project_names |= action::remove_if(invalid_project_name) | action::sort | action::unique;
-
-  // Write to disk
-  for (const auto& name : project_names) {
-    Folder project = default_project(name);
-    project.write_to(cwd);
-  }
-
+  remove_invalid_and_duplicate(project_names, cwd);
+  write_to_disk(project_names, cwd);
   if (RunCMake) {
-    for (const auto& name : project_names) {
-      auto project_path = cwd / name;
-      run_cmake(project_path / "build");
-    }
+    run_cmake_in_build_folders(project_names, cwd);
   }
 
   return 0;
