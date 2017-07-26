@@ -1,9 +1,9 @@
 #include "default_project.hpp"
 
-const std::string CMakeListsSrcFile = R"delim(#add_library(project_library )
+const std::string CMakeLists_src_file = R"delim(#add_library(project_library )
 )delim";
 
-std::string CMakeListsRootFile(const std::string name) {
+std::string CMakeLists_root_file(const std::string name) {
   return R"delim(cmake_minimum_required(VERSION 3.8)
 
 # Using c++17 for all personal projects
@@ -36,11 +36,11 @@ add_executable(main src/main.cpp)
 )delim";
 }
 
-const std::string ProjectileFile = R"delim(-/bin
+const std::string projectile_file = R"delim(-/bin
 -/build
 )delim";
 
-const std::string MainFile = R"delim(#include <iostream>
+const std::string main_file = R"delim(#include <iostream>
 
 int main(int argc, char *argv[]) {
 
@@ -48,17 +48,22 @@ int main(int argc, char *argv[]) {
 }
 )delim";
 
+const std::string clang_format_file = R"delim(BasedOnStyle: Google
+ColumnLimit: 100
+)delim";
+
 Folder default_project(const std::string& name) {
   Folder project{name};
   project.add(Folder{"bin"});
   project.add(Folder{"build"});
   project.add(Folder{"include"});
-  project.add(File{".projectile", ProjectileFile});
-  project.add(File{"CMakeLists.txt", CMakeListsRootFile(name)});
+  project.add(File{".projectile", projectile_file});
+  project.add(File{"CMakeLists.txt", CMakeLists_root_file(name)});
+  project.add(File{".clang-format", clang_format_file});
 
   Folder src{"src"};
-  src.add(File{"CMakeLists.txt", CMakeListsSrcFile});
-  src.add(File{"main.cpp", MainFile});
+  src.add(File{"CMakeLists.txt", CMakeLists_src_file});
+  src.add(File{"main.cpp", main_file});
 
   project.add(src);
 
