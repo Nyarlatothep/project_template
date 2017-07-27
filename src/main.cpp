@@ -3,14 +3,12 @@
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 
 #include <llvm/Support/CommandLine.h>
-#include <range/v3/action.hpp>
 #include <string>
 
 #include "cmake_execution.hpp"
 #include "default_project.hpp"
 
 namespace fs = boost::filesystem;
-using namespace ranges;
 
 bool invalid_project_name(const std::string name, const fs::path working_directory) {
   return !fs::portable_directory_name(name) || fs::exists(working_directory / name);
@@ -18,10 +16,12 @@ bool invalid_project_name(const std::string name, const fs::path working_directo
 
 template <class Container>
 void remove_invalid_and_duplicate(Container &project_names, const fs::path &working_directory) {
-  project_names |= action::remove_if([&working_directory](auto &name) {
-                     return invalid_project_name(name, working_directory);
-                   }) |
-                   action::sort | action::unique;
+  std::remove_if(std::begin(project_names), std::end(project_names),
+                 [&working_directory](const auto &name) {
+                   return invalid_project_name(name, working_directory);
+                 });
+  std::sort(std::begin(project_names), std::end(project_names));
+  std::unique(std::begin(project_names), std::end(project_names));
 }
 
 template <class Container>
@@ -41,17 +41,13 @@ void run_cmake_in_build_folders(Container &project_names, const fs::path working
 }
 
 int main(int argc, char *argv[]) {
-  using namespace llvm;
-
   const auto cwd = fs::current_path();
 
+  using namespace llvm;
   // Command Line Parsing
   cl::opt<bool> RunCMake("cmake", cl::desc("Run CMake from build directory"));
-  cl::list<std::string> InputProjectNames(cl::Positional, cl::desc("<Project Names>"),
-                                          cl::OneOrMore);
+  cl::list<std::string> project_names(cl::Positional, cl::desc("<Project Names>"), cl::OneOrMore);
   cl::ParseCommandLineOptions(argc, argv);
-  // Convert to vector to be able to use range methods
-  std::vector<std::string> project_names = InputProjectNames;
 
   remove_invalid_and_duplicate(project_names, cwd);
   write_to_disk(project_names, cwd);
