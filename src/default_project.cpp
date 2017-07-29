@@ -1,10 +1,10 @@
 #include "default_project.hpp"
 
-const std::string CMakeLists_src_file = R"delim(#add_library(project_library )
-)delim";
+File CMakeLists_src_file{"CMakeLists.txt", R"delim(#add_library(project_library )
+)delim"};
 
-std::string CMakeLists_root_file(const std::string name) {
-  return R"delim(cmake_minimum_required(VERSION 3.8)
+File make_CMakeLists_root(const std::string name) {
+  return File{"CMakeLists.txt", R"delim(cmake_minimum_required(VERSION 3.8)
 
 # Using c++17 for all personal projects
 set(CMAKE_CXX_STANDARD 17)
@@ -15,8 +15,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 # Change project name here
-set(PROJECT_NAME )delim" +
-         name + R"delim()
+set(PROJECT_NAME )delim" + name + R"delim()
 # Where to build the files
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
@@ -33,37 +32,37 @@ add_subdirectory(src)
 add_executable(main src/main.cpp)
 #target_link_libraries(main project_library)
 #target_link_libraries(main ${Boost_LIBRARIES})
-)delim";
+)delim"};
 }
 
-const std::string projectile_file = R"delim(-/bin
+File projectile_file{".projectile", R"delim(-/bin
 -/build
-)delim";
+)delim"};
 
-const std::string main_file = R"delim(#include <iostream>
+File main_file{"main.cpp", R"delim(#include <iostream>
 
 int main(int argc, char *argv[]) {
 
   return 0;
 }
-)delim";
+)delim"};
 
-const std::string clang_format_file = R"delim(BasedOnStyle: Google
+File clang_format_file{".clang-format", R"delim(BasedOnStyle: Google
 ColumnLimit: 100
-)delim";
+)delim"};
 
 Folder default_project(const std::string& name) {
   Folder project{name};
   project.add(Folder{"bin"});
   project.add(Folder{"build"});
   project.add(Folder{"include"});
-  project.add(File{".projectile", projectile_file});
-  project.add(File{"CMakeLists.txt", CMakeLists_root_file(name)});
-  project.add(File{".clang-format", clang_format_file});
+  project.add(projectile_file);
+  project.add(make_CMakeLists_root(name));
+  project.add(clang_format_file);
 
   Folder src{"src"};
-  src.add(File{"CMakeLists.txt", CMakeLists_src_file});
-  src.add(File{"main.cpp", main_file});
+  src.add(CMakeLists_src_file);
+  src.add(main_file);
 
   project.add(src);
 
