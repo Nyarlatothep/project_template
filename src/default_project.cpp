@@ -1,6 +1,6 @@
 #include "default_project.hpp"
 
-File CMakeLists_src_file{"CMakeLists.txt", R"delim(#add_library(project_library )
+File CMakeLists_src_file{"CMakeLists.txt", R"delim(add_executable(main main.cpp)
 )delim"};
 
 File make_CMakeLists_root(const std::string name) {
@@ -21,17 +21,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 project(${PROJECT_NAME})
 
-# Uncomment for most used Boost libraries
-#find_package(Boost REQUIRED COMPONENTS system filesystem program_options)
-
 include_directories(include)
 
-# Assumes a library called project_library is defined there
 add_subdirectory(src)
 
-add_executable(main src/main.cpp)
-#target_link_libraries(main project_library)
-#target_link_libraries(main ${Boost_LIBRARIES})
 )delim"};
 }
 
