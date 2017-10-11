@@ -5,7 +5,6 @@
 #include <llvm/Support/CommandLine.h>
 #include <string>
 
-#include "cmake_execution.hpp"
 #include "default_project.hpp"
 
 namespace fs = boost::filesystem;
@@ -15,7 +14,7 @@ bool invalid_project_name(const std::string name, const fs::path working_directo
 }
 
 template <class Container>
-void remove_invalid_and_duplicate(Container &project_names, const fs::path &working_directory) {
+void remove_invalid_and_duplicates(Container &project_names, const fs::path &working_directory) {
   std::remove_if(std::begin(project_names), std::end(project_names),
                  [&working_directory](const auto &name) {
                    return invalid_project_name(name, working_directory);
@@ -25,18 +24,17 @@ void remove_invalid_and_duplicate(Container &project_names, const fs::path &work
 }
 
 template <class Container>
-void write_to_disk(Container &project_names, const fs::path working_directory) {
+std::vector<Folder> to_project_folders(Container &project_names) {
+  std::vector<Folder> projects;
   for (const auto &name : project_names) {
-    Folder project = default_project(name);
-    project.write_to(working_directory);
+    projects.push_back(default_project(name));
   }
+  return projects;
 }
 
-template <class Container>
-void run_cmake_in_build_folders(Container &project_names, const fs::path working_directory) {
-  for (const std::string &name : project_names) {
-    auto project_path = working_directory / name;
-    run_cmake(project_path / "build");
+void write_to_disk(std::vector<Folder> &projects, const fs::path working_directory) {
+  for (const auto &project : projects) {
+    project.write_to(working_directory);
   }
 }
 
@@ -49,11 +47,9 @@ int main(int argc, char *argv[]) {
   cl::list<std::string> project_names(cl::Positional, cl::desc("<Project Names>"), cl::OneOrMore);
   cl::ParseCommandLineOptions(argc, argv);
 
-  remove_invalid_and_duplicate(project_names, cwd);
-  write_to_disk(project_names, cwd);
-  if (RunCMake) {
-    run_cmake_in_build_folders(project_names, cwd);
-  }
+  remove_invalid_and_duplicates(project_names, cwd);
+  auto projects = to_project_folders(project_names);
+  write_to_disk(projects, cwd);
 
   return 0;
 }

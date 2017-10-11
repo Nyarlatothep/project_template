@@ -1,6 +1,6 @@
 #include "default_project.hpp"
 
-File CMakeLists_src_file{"CMakeLists.txt", R"delim(add_executable(main main.cpp)
+const File CMakeLists_src_file{"CMakeLists.txt", R"delim(add_executable(main main.cpp)
 )delim"};
 
 File make_CMakeLists_root(const std::string name) {
@@ -28,11 +28,11 @@ add_subdirectory(src)
 )delim"};
 }
 
-File projectile_file{".projectile", R"delim(-/bin
+const File projectile_file{".projectile", R"delim(-/bin
 -/build
 )delim"};
 
-File main_file{"main.cpp", R"delim(#include <iostream>
+const File main_file{"main.cpp", R"delim(#include <iostream>
 
 int main(int argc, char *argv[]) {
 
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
 }
 )delim"};
 
-File clang_format_file{".clang-format", R"delim(BasedOnStyle: Google
+const File clang_format_file{".clang-format", R"delim(BasedOnStyle: Google
 ColumnLimit: 100
 )delim"};
 

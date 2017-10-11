@@ -1,7 +1,6 @@
 find_package(Boost REQUIRED COMPONENTS filesystem)
 
 add_library(boost_dependent
-  cmake_execution.cpp
   file.cpp
   folder.cpp)
 target_link_libraries(boost_dependent PRIVATE Boost::filesystem)
