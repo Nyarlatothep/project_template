@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
 
   using namespace llvm;
   // Command Line Parsing
-  cl::opt<bool> RunCMake("cmake", cl::desc("Run CMake from build directory"));
   cl::list<std::string> project_names(cl::Positional, cl::desc("<Project Names>"), cl::OneOrMore);
   cl::ParseCommandLineOptions(argc, argv);
 
