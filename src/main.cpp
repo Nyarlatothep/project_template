@@ -9,22 +9,22 @@
 
 namespace fs = boost::filesystem;
 
-bool invalid_project_name(const std::string name, const fs::path working_directory) {
-  return !fs::portable_directory_name(name) || fs::exists(working_directory / name);
+bool valid_project_name(const std::string name, const fs::path working_directory) {
+  return fs::portable_directory_name(name) and not fs::exists(working_directory / name);
 }
 
 template <class Container>
 void remove_invalid_and_duplicates(Container &project_names, const fs::path &working_directory) {
   std::remove_if(std::begin(project_names), std::end(project_names),
                  [&working_directory](const auto &name) {
-                   return invalid_project_name(name, working_directory);
+                   return (not valid_project_name(name, working_directory));
                  });
   std::sort(std::begin(project_names), std::end(project_names));
   std::unique(std::begin(project_names), std::end(project_names));
 }
 
-template <class Container>
-std::vector<Folder> to_project_folders(Container &project_names) {
+template <class NameContainer>
+std::vector<Folder> container_of_default_projects(NameContainer &project_names) {
   std::vector<Folder> projects;
   for (const auto &name : project_names) {
     projects.push_back(default_project(name));
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   cl::ParseCommandLineOptions(argc, argv);
 
   remove_invalid_and_duplicates(project_names, cwd);
-  auto projects = to_project_folders(project_names);
+  auto projects = container_of_default_projects(project_names);
   write_to_disk(projects, cwd);
 
   return 0;
