@@ -1,13 +1,18 @@
 find_package(Boost REQUIRED COMPONENTS filesystem)
 
-add_library(boost_dependent
-  file.cpp
-  folder.cpp)
-target_link_libraries(boost_dependent PRIVATE Boost::filesystem)
+add_library(file file.cpp ../include/file.hpp)
+target_link_libraries(file Boost::filesystem)
 
-add_library(project_library
-  default_project.cpp)
-target_link_libraries(project_library boost_dependent)
+add_library(sym_link sym_link.cpp ../include/sym_link.hpp)
+target_link_libraries(sym_link Boost::filesystem)
+
+add_library(folder folder.cpp ../include/folder.hpp)
+target_link_libraries(folder file sym_link Boost::filesystem)
+
+find_package(FMT REQUIRED)
+
+add_library(project_library default_project.cpp ../include/default_project.hpp)
+target_link_libraries(project_library folder fmt::fmt)
 
 find_package(LLVM REQUIRED CONFIG)
 add_definitions(${LLVM_DEFINITIONS})

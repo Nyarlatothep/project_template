@@ -9,25 +9,37 @@
 
 namespace fs = boost::filesystem;
 
-bool valid_project_name(const std::string name, const fs::path working_directory) {
+bool valid_project_name(const std::string &name, const fs::path &working_directory) {
   return fs::portable_directory_name(name) and not fs::exists(working_directory / name);
 }
 
 template <class Container>
-void remove_invalid_and_duplicates(Container &project_names, const fs::path &working_directory) {
-  std::remove_if(std::begin(project_names), std::end(project_names),
-                 [&working_directory](const auto &name) {
-                   return (not valid_project_name(name, working_directory));
-                 });
-  std::sort(std::begin(project_names), std::end(project_names));
-  std::unique(std::begin(project_names), std::end(project_names));
+std::vector<std::string> get_valid_project_names(const Container &project_names,
+                                                 const fs::path &working_directory) {
+  auto valid_name = [&working_directory](const auto &name) {
+    return valid_project_name(name, working_directory);
+  };
+
+  std::vector<std::string> valid_project_names;
+  std::copy_if(std::begin(project_names), std::end(project_names),
+               std::back_inserter(valid_project_names), valid_name);
+
+  std::sort(std::begin(valid_project_names), std::end(valid_project_names));
+
+  // remove duplicates
+  valid_project_names.erase(
+      std::unique(std::begin(valid_project_names), std::end(valid_project_names)),
+      std::end(valid_project_names));
+
+  return valid_project_names;
 }
 
-template <class NameContainer>
-std::vector<Folder> container_of_default_projects(NameContainer &project_names) {
+template <class Container>
+std::vector<Folder> container_of_default_projects(Container &project_names,
+                                                  const fs::path &working_directory) {
   std::vector<Folder> projects;
   for (const auto &name : project_names) {
-    projects.push_back(default_project(name));
+    projects.push_back(default_spacemacs_project(name, working_directory));
   }
   return projects;
 }
@@ -46,8 +58,8 @@ int main(int argc, char *argv[]) {
   cl::list<std::string> project_names(cl::Positional, cl::desc("<Project Names>"), cl::OneOrMore);
   cl::ParseCommandLineOptions(argc, argv);
 
-  remove_invalid_and_duplicates(project_names, cwd);
-  auto projects = container_of_default_projects(project_names);
+  auto valid_project_names = get_valid_project_names(project_names, cwd);
+  auto projects = container_of_default_projects(valid_project_names, cwd);
   write_to_disk(projects, cwd);
 
   return 0;

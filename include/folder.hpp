@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "file.hpp"
+#include "sym_link.hpp"
 
 class Folder {
  public:
@@ -14,6 +15,7 @@ class Folder {
 
   void add(File);
   void add(Folder);
+  void add(SymLink);
 
   void write_to(const boost::filesystem::path& directory) const;
 
@@ -21,6 +23,7 @@ class Folder {
   const std::string name_;
   std::vector<Folder> directories_;
   std::vector<File> files_;
+  std::vector<SymLink> sym_links_;
 };
 
 #endif /* FOLDER_HPP */
