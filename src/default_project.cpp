@@ -54,10 +54,10 @@ File dir_locals_file(const boost::filesystem::path& path_to_project_root) {
   const auto build_dir =
       fmt::format("(cmake-ide-build-dir . {})", path_to_project_root / "build" / cmake_build_type);
 
-  const auto dir_locals = fmt::format(R"foo((((nil .
+  const auto dir_locals = fmt::format(R"foo(((nil .
        ({}
         {}
-        {})))))foo",
+        {}))))foo",
                                       project_dir, build_dir, cmake_options);
   return File{".dir-locals.el", dir_locals};
 }
