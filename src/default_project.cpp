@@ -1,119 +1,117 @@
-#include "default_project.hpp"
+#include "project_template/default_project.hpp"
 
 #include <fmt/format.h>
-#include <fmt/ostream.h>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
 
-const File CMakeLists_src_file{"CMakeLists.txt", R"delim(find_package(FMT REQUIRED)
+namespace fs = boost::filesystem;
 
-add_executable(main main.cpp)
-target_link_libraries(main fmt::fmt)
-)delim"};
+namespace {
 
-File make_CMakeLists_root(const std::string& project_name) {
-  return File{"CMakeLists.txt", R"delim(cmake_minimum_required(VERSION 3.8)
-
-# Using c++17 for all personal projects
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Output compile_commands.json
-set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
-
-# Change project name here
-set(PROJECT_NAME )delim" + project_name +
-                                    R"delim()
-# Where to build the files
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-
-project(${PROJECT_NAME})
-
-include_directories(include)
-
-add_subdirectory(src)
-add_subdirectory(include)
-
-)delim"};
+void create_file(const fs::path& file_path, const std::string_view content) {
+  fs::ofstream file{file_path};
+  if (file) {
+    file << content;
+  } else {
+    throw std::runtime_error{
+        fmt::format(fmt("Could not create file {}"), file_path.string())};
+  }
 }
 
-const File projectile_file{".projectile", R"delim(-/bin
--/build
-)delim"};
-
-File dir_locals_file(const boost::filesystem::path& path_to_project_root) {
-  constexpr auto cmake_generator = "Ninja";
-  constexpr auto cmake_build_type = "Debug";
-  constexpr auto cmake_cpp_compiler = "clang++";
-  constexpr auto cmake_c_compiler = "clang";
-  const auto cmake_options = fmt::format(
-      "(cmake-ide-cmake-opts . \"-G{} -DCMAKE_BUILD_TYPE={} -DCMAKE_CXX_COMPILER={} "
-      "-DCMAKE_C_COMPILER={}\")",
-      cmake_generator, cmake_build_type, cmake_cpp_compiler, cmake_c_compiler);
-
-  const auto project_dir = fmt::format("(cmake-ide-project-dir . {})", path_to_project_root);
-  const auto build_dir =
-      fmt::format("(cmake-ide-build-dir . {})", path_to_project_root / "build" / cmake_build_type);
-
-  const auto dir_locals = fmt::format(R"foo(((nil .
-       ({}
-        {}
-        {}))))foo",
-                                      project_dir, build_dir, cmake_options);
-  return File{".dir-locals.el", dir_locals};
+void create_default_bin_folder(const fs::path& target_directory) {
+  const fs::path bin_root_directory = target_directory / "bin";
+  fs::create_directory(bin_root_directory);
 }
 
-const File main_file{"main.cpp", R"delim(#include <fmt/format.h>
+void create_default_build_folder(const fs::path& target_directory) {
+  const fs::path build_root_directory = target_directory / "build";
+  fs::create_directory(build_root_directory);
 
-int main(int argc, char *argv[]) {
-
-  return 0;
-}
-)delim"};
-
-const File clang_format_file{".clang-format", "BasedOnStyle: Google\n"};
-
-Folder default_build_folder() {
-  Folder build{"build"};
-  build.add(Folder{"Debug"});
-  build.add(Folder{"Release"});
-  return build;
+  fs::create_directory(build_root_directory / "Debug");
+  fs::create_directory(build_root_directory / "Release");
 }
 
-Folder default_include_folder() {
-  const boost::filesystem::path home = getenv("HOME");
-  const auto default_user_include = home / "in_progress/nyarlat";
-  Folder include("include");
-  include.add(SymLink{default_user_include});
-  include.add(File("CMakeLists.txt", "add_subdirectory(nyarlat)"));
-  return include;
+void create_default_include_folder(const fs::path& target_directory) {
+  const fs::path include_root_directory = target_directory / "include";
+  fs::create_directory(include_root_directory);
 }
 
-Folder default_src_folder() {
-  Folder src{"src"};
-  src.add(CMakeLists_src_file);
-  src.add(main_file);
-
-  return src;
+void create_CMakeLists_src_file(const fs::path& target_directory) {
+  constexpr std::string_view content{
+#include "templates/CMakeLists_src.txt.inc"
+  };
+  create_file(target_directory / "CMakeLists.txt", content);
 }
 
-Folder default_project(const std::string& project_name) {
-  Folder project{project_name};
-  project.add(Folder{"bin"});
-  project.add(default_build_folder());
-  project.add(default_include_folder());
-  project.add(default_src_folder());
-  project.add(make_CMakeLists_root(project_name));
-  project.add(clang_format_file);
-
-  return project;
+void create_main_cpp_file(const fs::path& target_directory) {
+  constexpr std::string_view content{
+#include "templates/main.cpp.inc"
+  };
+  create_file(target_directory / "main.cpp", content);
 }
 
-Folder default_spacemacs_project(const std::string& project_name,
-                                 const boost::filesystem::path& working_directory) {
-  auto project = default_project(project_name);
+void create_default_src_folder(const fs::path& target_directory) {
+  const fs::path src_root_directory = target_directory / "src";
+  fs::create_directory(src_root_directory);
 
-  project.add(projectile_file);
-  project.add(dir_locals_file(working_directory / project_name));
+  create_CMakeLists_src_file(src_root_directory);
+  create_main_cpp_file(src_root_directory);
+}
 
-  return project;
+void create_CMakeLists_root_file(const fs::path& target_directory,
+                                 const std::string_view project_name) {
+  constexpr auto text{
+#include "templates/CMakeLists_root.txt.inc"
+  };
+  return create_file(target_directory / "CMakeLists.txt",
+                     fmt::format(fmt(text), project_name));
+}
+
+void create_clang_format_file(const fs::path& target_directory) {
+  constexpr std::string_view content{
+#include "templates/.clang-format.inc"
+  };
+  create_file(target_directory / ".clang-format", content);
+}
+
+void create_projectile_file(const fs::path& target_directory) {
+  constexpr std::string_view content{
+#include "templates/.projectile.inc"
+  };
+  create_file(target_directory / ".projectile", content);
+}
+
+void create_dir_locals_file(const fs::path& target_directory) {
+  constexpr std::string_view cmake_build_type{"Debug"};
+  constexpr auto content{
+#include "templates/.dir-locals.el.inc"
+  };
+
+  create_file(target_directory / ".dir-locals.el",
+              fmt::format(fmt(content), cmake_build_type));
+}
+
+}  // namespace
+
+void create_default_project(const fs::path& target_directory,
+                            const std::string& project_name) {
+  const fs::path project_root_directory = target_directory / project_name;
+  fs::create_directory(project_root_directory);
+
+  create_default_bin_folder(project_root_directory);
+  create_default_build_folder(project_root_directory);
+  create_default_include_folder(project_root_directory);
+  create_default_src_folder(project_root_directory);
+
+  create_CMakeLists_root_file(project_root_directory, project_name);
+  create_clang_format_file(project_root_directory);
+}
+
+void create_default_spacemacs_project(const fs::path& target_directory,
+                                      const std::string& project_name) {
+  create_default_project(target_directory, project_name);
+
+  const fs::path project_root_directory = target_directory / project_name;
+  create_projectile_file(project_root_directory);
+  create_dir_locals_file(project_root_directory);
 }

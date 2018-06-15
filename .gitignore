@@ -43,4 +43,9 @@ build/
 # directory configuration
 .dir-locals.el
 
-CMakeLists\.txt\.user
+build/
+bin/
+
+compile_commands\.json
+
+\.cquery_cached_index/

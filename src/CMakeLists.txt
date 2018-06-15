@@ -1,23 +1,19 @@
 find_package(Boost REQUIRED COMPONENTS filesystem)
 
-add_library(file file.cpp ../include/file.hpp)
-target_link_libraries(file Boost::filesystem)
-
-add_library(sym_link sym_link.cpp ../include/sym_link.hpp)
-target_link_libraries(sym_link Boost::filesystem)
-
-add_library(folder folder.cpp ../include/folder.hpp)
-target_link_libraries(folder file sym_link Boost::filesystem)
-
 find_package(FMT REQUIRED)
 
-add_library(project_library default_project.cpp ../include/default_project.hpp)
-target_link_libraries(project_library folder fmt::fmt)
+add_library(project_library default_project.cpp ../include/project_template/default_project.hpp)
+target_link_libraries(project_library
+  PUBLIC Boost::filesystem
+  PRIVATE fmt::fmt project_std)
 
 find_package(LLVM REQUIRED CONFIG)
-add_definitions(${LLVM_DEFINITIONS})
+llvm_map_components_to_libnames(llvm_libs support)
+
+add_library(llvm_ INTERFACE)
+target_compile_definitions(llvm_ INTERFACE ${LLVM_DEFINITIONS})
+target_include_directories(llvm_ INTERFACE ${LLVM_INCLUDE_DIRS})
+target_link_libraries(llvm_ INTERFACE ${llvm_libs})
 
 add_executable(main main.cpp)
-target_include_directories(main PUBLIC ${LLVM_INCLUDE_DIRS})
-llvm_map_components_to_libnames(llvm_libs support)
-target_link_libraries(main Boost::filesystem project_library ${llvm_libs})
+target_link_libraries(main Boost::filesystem project_library project_std fmt::fmt llvm_)
