@@ -1,15 +1,14 @@
 #include "project_template/default_project.hpp"
 
 #include <fmt/format.h>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/operations.hpp>
+#include <fstream>
 
-namespace fs = boost::filesystem;
+namespace fs = std::experimental::filesystem;
 
 namespace {
 
 void create_file(const fs::path& file_path, const std::string_view content) {
-  fs::ofstream file{file_path};
+  std::ofstream file{file_path};
   if (file) {
     file << content;
   } else {
@@ -94,7 +93,7 @@ void create_dir_locals_file(const fs::path& target_directory) {
 }  // namespace
 
 void create_default_project(const fs::path& target_directory,
-                            const std::string& project_name) {
+                            std::string_view project_name) {
   const fs::path project_root_directory = target_directory / project_name;
   fs::create_directory(project_root_directory);
 
@@ -108,7 +107,7 @@ void create_default_project(const fs::path& target_directory,
 }
 
 void create_default_spacemacs_project(const fs::path& target_directory,
-                                      const std::string& project_name) {
+                                      std::string_view project_name) {
   create_default_project(target_directory, project_name);
 
   const fs::path project_root_directory = target_directory / project_name;

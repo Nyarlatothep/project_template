@@ -1,26 +1,26 @@
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-#define BOOST_FILESYSTEM_NO_DEPRECATED
-
 #include <fmt/format.h>
 #include <llvm/Support/CommandLine.h>
+#include <experimental/filesystem>
 #include <string>
 
 #include "project_template/default_project.hpp"
+#include "project_template/portability_filesystem.hpp"
 
-bool valid_project_name(const std::string& name,
-                        const boost::filesystem::path& working_directory) {
-  return boost::filesystem::portable_directory_name(name) and
-         not boost::filesystem::exists(working_directory / name);
+namespace fs = std::experimental::filesystem;
+
+bool valid_project_name(std::string_view name,
+                        const fs::path& working_directory) {
+  return portable_directory_name(name) and
+         not fs::exists(working_directory / name);
 }
 
 int main(int argc, char* argv[]) {
-  const auto cwd = boost::filesystem::current_path();
+  const auto cwd = fs::current_path();
 
   // Command Line Parsing
-  llvm::cl::opt<std::string> project_name(
+  llvm::cl::opt<std::string> project_name{
       llvm::cl::Positional, llvm::cl::desc("Specify output project name"),
-      llvm::cl::value_desc("project name"), llvm::cl::Required);
+      llvm::cl::value_desc("project name"), llvm::cl::Required};
   llvm::cl::ParseCommandLineOptions(argc, argv);
 
   if (valid_project_name(project_name, cwd)) {

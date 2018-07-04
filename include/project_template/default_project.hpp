@@ -1,14 +1,15 @@
 #ifndef DEFAULT_PROJECT_HPP
 #define DEFAULT_PROJECT_HPP
 
-#include <boost/filesystem/path.hpp>
-#include <string>
+#include <experimental/filesystem>
+#include <string_view>
 
-void create_default_project(const boost::filesystem::path& target_directory,
-                            const std::string& project_name);
+void create_default_project(
+    const std::experimental::filesystem::path& target_directory,
+    std::string_view project_name);
 
 void create_default_spacemacs_project(
-    const boost::filesystem::path& target_directory,
-    const std::string& project_name);
+    const std::experimental::filesystem::path& target_directory,
+    std::string_view project_name);
 
 #endif /* DEFAULT_PROJECT_HPP */
