@@ -3,7 +3,7 @@
 #include <fmt/format.h>
 #include <fstream>
 
-namespace fs = std::experimental::filesystem;
+#include "project_template/cmake_execution.hpp"
 
 namespace {
 
@@ -90,10 +90,8 @@ void create_dir_locals_file(const fs::path& target_directory) {
               fmt::format(fmt(content), cmake_build_type));
 }
 
-}  // namespace
-
-void create_default_project(const fs::path& target_directory,
-                            std::string_view project_name) {
+void create_basic_project(const fs::path& target_directory,
+                          std::string_view project_name) {
   const fs::path project_root_directory = target_directory / project_name;
   fs::create_directory(project_root_directory);
 
@@ -106,11 +104,47 @@ void create_default_project(const fs::path& target_directory,
   create_clang_format_file(project_root_directory);
 }
 
+void run_cmake_in_build_dirs(const fs::path& project_root_directory) {
+  const fs::path cmake_build_debug_dir = project_root_directory / "build/Debug";
+  const fs::path cmake_build_release_dir =
+      project_root_directory / "build/Release";
+
+  run_cmake(project_root_directory, cmake_build_debug_dir, "Debug");
+  run_cmake(project_root_directory, cmake_build_release_dir, "Release");
+}
+
+void create_symlink_to_compile_commands(
+    const fs::path& project_root_directory) {
+  constexpr std::string_view compile_commands_json{"compile_commands.json"};
+  fs::create_symlink(
+      project_root_directory / "build/Debug" / compile_commands_json,
+      project_root_directory / compile_commands_json);
+}
+
+}  // namespace
+
+void create_default_project(const fs::path& target_directory,
+                            std::string_view project_name) {
+  create_basic_project(target_directory, project_name);
+
+  const auto project_root_directory = target_directory / project_name;
+  run_cmake_in_build_dirs(project_root_directory);
+  create_symlink_to_compile_commands(project_root_directory);
+}
+
 void create_default_spacemacs_project(const fs::path& target_directory,
                                       std::string_view project_name) {
-  create_default_project(target_directory, project_name);
+  create_basic_project(target_directory, project_name);
 
   const fs::path project_root_directory = target_directory / project_name;
   create_projectile_file(project_root_directory);
   create_dir_locals_file(project_root_directory);
+
+  run_cmake_in_build_dirs(project_root_directory);
+  create_symlink_to_compile_commands(project_root_directory);
 }
+void create_default_test_project(const fs::path& target_directory,
+                                 std::string_view project_name) {}
+
+void create_default_test_spacemacs_project(const fs::path& target_directory,
+                                           std::string_view project_name) {}

@@ -3,9 +3,6 @@ R"delim(cmake_minimum_required(VERSION 3.11)
 # Use iso c++
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Output compile_commands.json
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 # Link this 'library' to use the following warnings
 add_library(project_warnings INTERFACE)
 
