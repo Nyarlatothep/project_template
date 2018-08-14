@@ -4,6 +4,7 @@
 #include <boost/process.hpp>
 
 namespace bp = boost::process;
+namespace fs = std::filesystem;
 
 void run_cmake(const fs::path& source_directory,
                const fs::path& build_directory,

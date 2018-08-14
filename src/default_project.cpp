@@ -5,6 +5,8 @@
 
 #include "project_template/cmake_execution.hpp"
 
+namespace fs = std::filesystem;
+
 namespace {
 
 void create_file(const fs::path& file_path, const std::string_view content) {
@@ -121,6 +123,16 @@ void create_symlink_to_compile_commands(
       project_root_directory / compile_commands_json);
 }
 
+void create_symlynk_to_executables(const fs::path& project_root_directory) {
+  constexpr std::string_view debug{"debug"};
+  constexpr std::string_view release{"release"};
+
+  fs::create_symlink(project_root_directory / "build/Debug/src/main",
+                     project_root_directory / "bin" / debug);
+  fs::create_symlink(project_root_directory / "build/Release/src/main",
+                     project_root_directory / "bin" / release);
+}
+
 }  // namespace
 
 void create_default_project(const fs::path& target_directory,
@@ -142,6 +154,7 @@ void create_default_spacemacs_project(const fs::path& target_directory,
 
   run_cmake_in_build_dirs(project_root_directory);
   create_symlink_to_compile_commands(project_root_directory);
+  create_symlynk_to_executables(project_root_directory);
 }
 void create_default_test_project(const fs::path& target_directory,
                                  std::string_view project_name) {}

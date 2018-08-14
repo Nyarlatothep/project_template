@@ -1,18 +1,13 @@
 #include <fmt/format.h>
 #include <llvm/Support/CommandLine.h>
-#include <string>
-
-#if __has_include(<filesystem>)
 #include <filesystem>
-namespace fs = std::filesystem;
-#else
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#endif
+#include <string>
 
 #include "project_template/cmake_execution.hpp"
 #include "project_template/default_project.hpp"
 #include "project_template/portability_filesystem.hpp"
+
+namespace fs = std::filesystem;
 
 constexpr bool valid_project_name(std::string_view name,
                                   const fs::path& working_directory) {
