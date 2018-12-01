@@ -1,4 +1,4 @@
-R"delim(#include <fmt/format.h>
+R"delim(
 
 int main(int argc, char *argv[]) {
 

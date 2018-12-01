@@ -1,6 +1,6 @@
-R"delim(find_package(FMT REQUIRED)
-
-add_executable(main main.cpp)
+R"delim(add_executable(main)
+target_sources(main PRIVATE main.cpp)
 target_link_libraries(main
-  PRIVATE fmt::fmt main_project)
+                      PRIVATE main::project
+                              project_warnings)
 )delim"

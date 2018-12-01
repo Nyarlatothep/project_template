@@ -9,8 +9,9 @@ namespace fs = std::filesystem;
 
 namespace {
 
-void create_file(const fs::path& file_path, const std::string_view content) {
+void create_file(const fs::path& file_path, std::string_view content) {
   std::ofstream file{file_path};
+
   if (file) {
     file << content;
   } else {
@@ -61,11 +62,12 @@ void create_default_src_folder(const fs::path& target_directory) {
 
 void create_CMakeLists_root_file(const fs::path& target_directory,
                                  const std::string_view project_name) {
-  constexpr auto text{
+  constexpr auto text = std::string_view{
 #include "templates/CMakeLists_root.txt.inc"
   };
+
   return create_file(target_directory / "CMakeLists.txt",
-                     fmt::format(fmt(text), project_name));
+                     fmt::format(text, project_name));
 }
 
 void create_clang_format_file(const fs::path& target_directory) {
@@ -80,16 +82,6 @@ void create_projectile_file(const fs::path& target_directory) {
 #include "templates/.projectile.inc"
   };
   create_file(target_directory / ".projectile", content);
-}
-
-void create_dir_locals_file(const fs::path& target_directory) {
-  constexpr std::string_view cmake_build_type{"Debug"};
-  constexpr auto content{
-#include "templates/.dir-locals.el.inc"
-  };
-
-  create_file(target_directory / ".dir-locals.el",
-              fmt::format(fmt(content), cmake_build_type));
 }
 
 void create_basic_project(const fs::path& target_directory,
@@ -150,14 +142,8 @@ void create_default_spacemacs_project(const fs::path& target_directory,
 
   const fs::path project_root_directory = target_directory / project_name;
   create_projectile_file(project_root_directory);
-  create_dir_locals_file(project_root_directory);
 
   run_cmake_in_build_dirs(project_root_directory);
   create_symlink_to_compile_commands(project_root_directory);
   create_symlynk_to_executables(project_root_directory);
 }
-void create_default_test_project(const fs::path& target_directory,
-                                 std::string_view project_name) {}
-
-void create_default_test_spacemacs_project(const fs::path& target_directory,
-                                           std::string_view project_name) {}

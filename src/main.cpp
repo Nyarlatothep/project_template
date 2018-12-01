@@ -28,11 +28,7 @@ int main(int argc, char* argv[]) {
   cl::ParseCommandLineOptions(argc, argv);
 
   if (valid_project_name(project_name, cwd)) {
-    if (test) {
-      create_default_test_spacemacs_project(cwd, project_name);
-    } else {
-      create_default_spacemacs_project(cwd, project_name);
-    }
+    create_default_spacemacs_project(cwd, project_name);
   } else {
     fmt::print("Invalid project name\n");
   }
